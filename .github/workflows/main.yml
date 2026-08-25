@@ -1,0 +1,21 @@
+name: Auto Docker Build
+
+# Robot kab jagega?
+on:
+  push:
+    branches:
+      - main
+
+# Robot jagne ke baad kya karega?
+jobs:
+  build-my-app:
+    runs-on: ubuntu-latest # GitHub humein 1 free Linux computer dega
+    
+    steps:
+    # Step 1: GitHub se hamara code us free computer me download karo
+    - name: Check out the code
+      uses: actions/checkout@v4
+      
+    # Step 2: Us free computer me Docker build command chalao
+    - name: Build the Docker Image
+      run: docker build -t my-first-app .
