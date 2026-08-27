@@ -1,0 +1,42 @@
+name: Auto Deploy to AWS Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Check Out Karo
+        uses: actions/checkout@v3
+
+      - name: Docker Hub Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Image Banao aur Push Karo
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/satyam-web:latest
+
+  deploy-to-aws:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: AWS Server pe jao aur Deploy karo
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_PRIVATE_KEY }}
+          script: |
+            sudo docker stop live-website || true
+            sudo docker rm live-website || true
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/satyam-web:latest
+            sudo docker run -d --name live-website -p 80:80 ${{ secrets.DOCKER_USERNAME }}/satyam-web:latest
